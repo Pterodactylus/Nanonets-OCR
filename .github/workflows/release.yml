@@ -19,7 +19,13 @@ jobs:
         with:
           python-version: '3.x' # Use the latest Python 3.x
 
-      - name: Install dependencies
+      - name: Install Torch and Torchvision
+        run: |
+          echo "torch>=2.0.0" > requirements_torch.txt
+          echo "torchvision>=0.15.0" >> requirements_torch.txt
+          pip install -r requirements_torch.txt
+
+      - name: Install remaining dependencies
         run: pip install -r requirements.txt
 
       - name: Build AppImage
