@@ -1,4 +1,7 @@
-# Batch OCR Processor
+![Banner 1](assets/banner-1.jpg)
+![Banner 2](assets/banner-2.jpg)
+
+# Nanonets OCR Processor
 
 A powerful batch OCR processing tool that extracts text from images and PDFs using the Nanonets OCR model. Now optimized for CPU usage by default with improved output readability.
 
@@ -34,7 +37,7 @@ cd OCR
 2. **Create and activate virtual environment:**
 ```bash
 # Create virtual environment
-python -m venv ocr_env
+python3 -m venv ocr_env
 
 # Activate virtual environment
 # On Linux/Mac:
@@ -45,22 +48,18 @@ ocr_env\Scripts\activate
 
 3. **Install dependencies:**
 ```bash
-# Install basic dependencies first
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
 
 # Install remaining dependencies
 pip install -r requirements.txt
 
-# Install flash-attention with no build isolation (recommended)
+# (GPU Option) Install flash-attention with no build isolation (recommended)
 pip install flash-attn --no-build-isolation
 ```
 
 2. **Prepare data directories:**
 ```bash
-# Create necessary directories if needed
-mkdir -p extracted_text
 
-# Place your documents in the example_files directory (or specify custom input directory)
+# Place your documents in the example_files directory (or specify custom input directory). Some files have already been included.
 cp /path/to/your/documents/* example_files/
 ```
 
@@ -68,14 +67,15 @@ cp /path/to/your/documents/* example_files/
 
 ### Basic Usage (CPU - Default)
 ```bash
-# 8GB RAM: Use conservative defaults (batch-size 2, 1080p images)
-python batch_ocr.py
+# CPU: Use conservative defaults (batch-size 1, 1080p images)
+python batch_ocr.py --cpu --batch-size 1 --pdf-chunk-size 1
 
-# 16GB RAM: Increase batch size for better performance
-python batch_ocr.py --batch-size 3 --pdf-chunk-size 2
+# GPU 8GB RAM: Use conservative defaults (batch-size 1, 1080p images)
+python batch_ocr.py --gpu --batch-size 1 --pdf-chunk-size 1
 
-# GPU usage (requires 6-8GB VRAM for default settings, 8-12GB for larger batches)
-python batch_ocr.py --gpu --batch-size 3
+# GPU 16GB RAM: Increase batch size for better performance
+python batch_ocr.py --gpu --batch-size 5 --pdf-chunk-size 2
+
 ```
 
 ### Custom Input/Output Directories
@@ -104,7 +104,8 @@ python batch_ocr.py \
 
 ### Command Line Options
 
-- `--gpu`: Use GPU for processing (default: CPU)
+- `--cpu`: Use CPU for processing (default)
+- `--gpu`: Use GPU for processing
 - `--input-dir`: Input directory containing documents (default: `example_files`)
 - `--output-dir`: Output directory for results (default: `extracted_text`)
 - `--csv-file`: CSV file for results summary (default: `ocr_results.csv`)
@@ -112,6 +113,8 @@ python batch_ocr.py \
 - `--pdf-chunk-size`: Number of PDF pages to process at once (default: 1)
 - `--max-image-width`: Maximum image width in pixels (default: 1080)
 - `--max-image-height`: Maximum image height in pixels (default: 1080)
+
+**Note:** The `--cpu` and `--gpu` options are mutually exclusive. If neither is specified, CPU processing is used by default.
 
 ## Project Structure
 

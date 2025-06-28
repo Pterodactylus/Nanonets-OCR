@@ -686,7 +686,12 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='Memory-Optimized Batch OCR Processing')
-    parser.add_argument('--gpu', action='store_true', help='Use GPU for processing (default: CPU)')
+    
+    # Create mutually exclusive group for CPU/GPU selection
+    device_group = parser.add_mutually_exclusive_group()
+    device_group.add_argument('--cpu', action='store_true', help='Use CPU for processing (default)')
+    device_group.add_argument('--gpu', action='store_true', help='Use GPU for processing')
+    
     parser.add_argument('--input-dir', default='example_files', help='Input directory containing documents (default: example_files)')
     parser.add_argument('--output-dir', default='extracted_text', help='Output directory for markdown files (default: extracted_text)')
     parser.add_argument('--csv-file', default='ocr_results.csv', help='CSV file for results summary (default: ocr_results.csv)')
@@ -697,8 +702,11 @@ def main():
     
     args = parser.parse_args()
     
-    # Create processor with memory optimizations
-    use_cpu = not args.gpu
+    # Determine device usage - CPU is default when neither flag is specified
+    if args.gpu:
+        use_cpu = False
+    else:
+        use_cpu = True  # Default to CPU, whether --cpu is specified or neither flag is used
     processor = MemoryOptimizedBatchOCRProcessor(
         use_cpu=use_cpu,
         batch_size=args.batch_size,

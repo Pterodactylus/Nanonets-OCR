@@ -73,7 +73,6 @@ pip-selfcheck.json
 Thumbs.db
 
 # OCR-specific files
-extracted_text/
 temp_images/
 *.csv
 models/
