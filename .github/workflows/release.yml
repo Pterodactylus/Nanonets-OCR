@@ -19,17 +19,30 @@ jobs:
         with:
           python-version: '3.x' # Use the latest Python 3.x
 
+      - name: Create virtual environment
+        run: |
+          python -m venv ocr_env
+          source ocr_env/bin/activate
+          pip install --upgrade pip
+
       - name: Install Torch and Torchvision
         run: |
+          source ocr_env/bin/activate
           echo "torch>=2.0.0" > requirements_torch.txt
           echo "torchvision>=0.15.0" >> requirements_torch.txt
           pip install -r requirements_torch.txt
 
       - name: Install remaining dependencies
         run: |
+          source ocr_env/bin/activate
           # Create a temporary requirements file excluding flash-attn
           grep -v "flash-attn" requirements.txt > requirements_no_flash_attn.txt
           pip install -r requirements_no_flash_attn.txt
+
+      - name: Install PyInstaller
+        run: |
+          source ocr_env/bin/activate
+          pip install pyinstaller
 
       - name: Build AppImage
         run: |
