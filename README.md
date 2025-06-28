@@ -52,8 +52,6 @@ ocr_env\Scripts\activate
 # Install remaining dependencies
 pip install -r requirements.txt
 
-# (GPU Option) Install flash-attention with no build isolation (recommended)
-pip install flash-attn --no-build-isolation
 ```
 
 2. **Prepare data directories:**
