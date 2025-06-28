@@ -101,14 +101,14 @@ if [ $? -ne 0 ]; then
 fi
 
 # Copy desktop file into AppDir/usr/share/applications
-cp "gui_tkinter.desktop" "$APPDIR_DESKTOP"/
+cp "${SCRIPT_DIR}/gui_tkinter.desktop" "$APPDIR_DESKTOP"/
 if [ $? -ne 0 ]; then
     echo "Error: Failed to copy desktop file to AppDir."
     exit 1
 fi
 
 # Copy icon file into AppDir/usr/share/icons/hicolor/256x256/apps
-cp "assets/favicon-32x32.png" "${APPDIR_ICONS}/gui_tkinter.png"
+cp "${SCRIPT_DIR}/assets/favicon-32x32.png" "${APPDIR_ICONS}/gui_tkinter.png"
 if [ $? -ne 0 ]; then
     echo "Error: Failed to copy icon file to AppDir."
     exit 1
