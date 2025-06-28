@@ -92,10 +92,14 @@ class OCRApp:
             self.output_dir_entry.insert(0, directory)
 
     def log_message(self, message):
+        # Log to GUI
         self.log_text.config(state=tk.NORMAL)
         self.log_text.insert(tk.END, message + "\n")
         self.log_text.see(tk.END) # Auto-scroll to the end
         self.log_text.config(state=tk.DISABLED)
+        
+        # Also log to console for debugging
+        print(f"[GUI] {message}")
 
     def start_ocr_process(self):
         input_dir = self.input_dir_entry.get()
@@ -124,18 +128,32 @@ class OCRApp:
     def _run_ocr_in_thread(self, input_dir, output_dir, device, batch_size, pdf_chunk_size, max_width, max_height):
         try:
             # Determine the path to batch_ocr.py within the PyInstaller bundle
-            # In a --onedir bundle, sys.executable points to the main executable,
-            # and batch_ocr.py is placed alongside it by --add-data.
             if getattr(sys, 'frozen', False): # Check if running in a PyInstaller bundle
-                # If frozen, sys.executable is the path to the bundled executable
-                # and batch_ocr.py is in the same directory.
-                script_path = os.path.join(os.path.dirname(sys.executable), 'batch_ocr.py')
+                # If frozen, we need to use the bundled Python interpreter
+                # In PyInstaller, sys.executable points to the main executable
+                # and batch_ocr.py is in the _internal directory
+                bundle_dir = os.path.dirname(sys.executable)
+                script_path = os.path.join(bundle_dir, '_internal', 'batch_ocr.py')
+                
+                # Use the bundled Python executable
+                python_executable = sys.executable
+                
+                # Set up environment to use bundled libraries
+                env = os.environ.copy()
+                env['PYTHONPATH'] = os.path.join(bundle_dir, '_internal')
+                
+                # For PyInstaller bundles, we need to run the script directly with the bundled interpreter
+                # but we'll import and run it as a module instead of subprocess to ensure all dependencies work
+                self._run_ocr_directly(input_dir, output_dir, device, batch_size, pdf_chunk_size, max_width, max_height)
+                return
             else:
                 # Not frozen, running as a regular Python script
-                script_path = "batch_ocr.py" # Assume it's in the current working directory
+                script_path = "batch_ocr.py"
+                python_executable = sys.executable
+                env = None
 
             command = [
-                sys.executable, script_path, # Use the bundled Python interpreter and the correct script path
+                python_executable, script_path,
                 "--input-dir", input_dir,
                 "--output-dir", output_dir,
                 "--batch-size", str(batch_size),
@@ -151,7 +169,7 @@ class OCRApp:
             # Ensure output directory exists
             os.makedirs(output_dir, exist_ok=True)
 
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True, env=env)
 
             total_files = 0
             processed_files = 0
@@ -191,6 +209,49 @@ class OCRApp:
             self.root.after(0, self.log_message, f"An unexpected error occurred: {e}")
         finally:
             self.root.after(0, lambda: self.start_button.config(state=tk.NORMAL)) # Re-enable button
+
+    def _run_ocr_directly(self, input_dir, output_dir, device, batch_size, pdf_chunk_size, max_width, max_height):
+        """Run OCR directly by importing the batch_ocr module when in PyInstaller bundle"""
+        try:
+            # Import the batch_ocr module directly
+            import batch_ocr
+            
+            # Create the processor with the specified parameters
+            use_cpu = device == "cpu"
+            processor = batch_ocr.MemoryOptimizedBatchOCRProcessor(
+                use_cpu=use_cpu,
+                batch_size=int(batch_size),
+                max_pdf_pages_per_chunk=int(pdf_chunk_size),
+                max_image_size=(int(max_width), int(max_height)),
+                model_path="nanonets/Nanonets-OCR-s"
+            )
+            
+            # Redirect stdout to capture the output
+            import io
+            import contextlib
+            
+            # Create a string buffer to capture output
+            output_buffer = io.StringIO()
+            
+            # Capture both stdout and stderr
+            with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
+                # Process documents
+                processor.process_documents_folder(input_dir, output_dir, "ocr_results.csv")
+            
+            # Get the captured output
+            captured_output = output_buffer.getvalue()
+            
+            # Send output to GUI line by line
+            for line in captured_output.split('\n'):
+                if line.strip():
+                    self.root.after(0, self.log_message, line.strip())
+            
+            self.root.after(0, self.log_message, "OCR process completed successfully!")
+            
+        except Exception as e:
+            self.root.after(0, self.log_message, f"Direct OCR execution failed: {e}")
+            import traceback
+            self.root.after(0, self.log_message, f"Traceback: {traceback.format_exc()}")
 
 if __name__ == "__main__":
     root = tk.Tk()

@@ -2,34 +2,65 @@
 
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
-APP_NAME="gui_tkinter" # Changed to match the main script name
+APP_NAME="gui_tkinter"
 APP_DIR="${SCRIPT_DIR}/dist/${APP_NAME}"
 LINUXDEPLOY_URL="https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
 LINUXDEPLOY_PATH="${SCRIPT_DIR}/linuxdeploy-x86_64.AppImage"
 APPIMAGE_OUTPUT_DIR="${SCRIPT_DIR}/appimage_build"
+VENV_PATH="${SCRIPT_DIR}/ocr_env"
 
-# --- Step 0: Pre-requisites (PyInstaller) ---
+# --- Step 0: Check virtual environment ---
+echo "--- Checking virtual environment ---"
+if [ ! -d "$VENV_PATH" ]; then
+    echo "Error: Virtual environment not found at $VENV_PATH"
+    echo "Please create and activate the virtual environment with all dependencies installed."
+    exit 1
+fi
+
+# Activate virtual environment
+echo "--- Activating virtual environment ---"
+source "${VENV_PATH}/bin/activate"
+if [ $? -ne 0 ]; then
+    echo "Error: Failed to activate virtual environment."
+    exit 1
+fi
+
+# --- Step 1: Check PyInstaller ---
 echo "--- Checking for PyInstaller ---"
 if ! command -v pyinstaller &> /dev/null
 then
-    echo "PyInstaller not found. Installing..."
+    echo "PyInstaller not found in virtual environment. Installing..."
     pip install pyinstaller
     if [ $? -ne 0 ]; then
-        echo "Error: Failed to install PyInstaller. Please install it manually (pip install pyinstaller) and try again."
+        echo "Error: Failed to install PyInstaller. Please install it manually and try again."
         exit 1
     fi
 fi
 
-# --- Step 2: Run PyInstaller ---
-echo "--- Running PyInstaller ---"
-# Run PyInstaller to create a one-directory bundle
-pyinstaller --noconfirm --onedir gui_tkinter.py --name "${APP_NAME}" \
-    --add-data "batch_ocr.py:." \
-    --add-data "gui_tkinter.desktop:."
+# --- Step 2: Clean previous builds ---
+echo "--- Cleaning previous builds ---"
+rm -rf "${SCRIPT_DIR}/build"
+rm -rf "${SCRIPT_DIR}/dist"
+rm -rf "${SCRIPT_DIR}/AppDir"
+
+# --- Step 3: Run PyInstaller with spec file ---
+echo "--- Running PyInstaller with enhanced configuration ---"
+echo "This may take several minutes due to the large ML dependencies..."
+
+# Set environment variables for better PyInstaller performance
+export PYTHONOPTIMIZE=1
+export TRANSFORMERS_VERBOSITY=error
+
+# Run PyInstaller using the spec file
+pyinstaller --noconfirm gui_tkinter.spec
+
 if [ $? -ne 0 ]; then
     echo "Error: PyInstaller failed. Check the output above for details."
     exit 1
 fi
+
+echo "--- PyInstaller completed successfully ---"
+echo "Bundle size: $(du -sh "${APP_DIR}" | cut -f1)"
 
 # --- Step 3: Download linuxdeploy if not present ---
 echo "--- Checking for linuxdeploy ---"
