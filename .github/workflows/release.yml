@@ -45,6 +45,7 @@ jobs:
           pip install pyinstaller
 
       - name: Build AppImage
+        timeout-minutes: 60
         run: |
           chmod +x build_appimage.sh
           ./build_appimage.sh
