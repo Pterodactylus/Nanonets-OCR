@@ -25,8 +25,14 @@ jobs:
           echo "torchvision>=0.15.0" >> requirements_torch.txt
           pip install -r requirements_torch.txt
 
+      - name: Install Flash-Attn (without build isolation)
+        run: pip install flash-attn>=2.5.8 --no-build-isolation
+
       - name: Install remaining dependencies
-        run: pip install -r requirements.txt
+        run: |
+          # Create a temporary requirements file excluding flash-attn
+          grep -v "flash-attn" requirements.txt > requirements_no_flash_attn.txt
+          pip install -r requirements_no_flash_attn.txt
 
       - name: Build AppImage
         run: |
