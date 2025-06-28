@@ -52,7 +52,7 @@ export PYTHONOPTIMIZE=1
 export TRANSFORMERS_VERBOSITY=error
 
 # Run PyInstaller using the spec file
-pyinstaller --noconfirm gui_tkinter.spec
+pyinstaller --noconfirm "${SCRIPT_DIR}/gui_tkinter.spec"
 
 if [ $? -ne 0 ]; then
     echo "Error: PyInstaller failed. Check the output above for details."
