@@ -1,0 +1,36 @@
+# OCR Extraction Results
+
+## Document Information
+
+- **Filename:** a01-011u.png
+- **File Format:** .png
+- **File Size:** 3,046,761 bytes
+- **Created:** 2025-06-28T10:21:23.407472
+
+## Processing Information
+
+- **Processed:** 2025-06-28T11:17:29.775400
+- **Processing Time:** 0.0 seconds
+- **Pages Processed:** 1
+
+## Content Analysis
+
+- **Word Count:** 122
+- **Character Count:** 808
+- **Contains Tables:** ❌ No
+- **Contains Equations:** ❌ No
+- **Contains Images:** ❌ No
+- **Contains Watermarks:** ❌ No
+- **Contains Page Numbers:** ❌ No
+
+## Extracted Text
+
+---
+
+Sentence Database A01-011
+
+Delegates from Mr. Kenneth Kaunda's United National Independence Party (280,000 members) and Mr. Harry Nkumbula's African National Congress (400,000) will meet in London today to discuss a common course of action. Sir Roy is violently opposed to Africans getting an elected majority in Northern Rhodesia, but the Colonial Secretary, Mr. Iain Macleod, is insisting on a policy of change.
+
+Delegates from Mr. Kenneth Kaunda's United National Independence Party (280,000 members) and Mr. Harry Nkumbula's African National Congress (400,000) will meet in London today to discuss a common course of action. Sir Roy is violently opposed to Africans getting an elected majority in Northern Rhodesia, but the Colonial Secretary, Mr. Iain Macleod, is insisting on a policy of change.
+
+Name:

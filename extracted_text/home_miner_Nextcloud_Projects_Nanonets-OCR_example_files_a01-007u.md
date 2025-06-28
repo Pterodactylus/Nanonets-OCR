@@ -1,0 +1,36 @@
+# OCR Extraction Results
+
+## Document Information
+
+- **Filename:** a01-007u.png
+- **File Format:** .png
+- **File Size:** 2,892,717 bytes
+- **Created:** 2025-06-28T10:21:23.398472
+
+## Processing Information
+
+- **Processed:** 2025-06-28T11:17:41.209950
+- **Processing Time:** 0.0 seconds
+- **Pages Processed:** 1
+
+## Content Analysis
+
+- **Word Count:** 128
+- **Character Count:** 778
+- **Contains Tables:** ❌ No
+- **Contains Equations:** ❌ No
+- **Contains Images:** ❌ No
+- **Contains Watermarks:** ❌ No
+- **Contains Page Numbers:** ❌ No
+
+## Extracted Text
+
+---
+
+Sentence Database A01-007
+
+Since 1958, 13 Labour life Peers and Peeresses have been created. Most Labour sentiment would still favour the abolition of the House of Lords, but while it remains Labour has to have an adequate number of members. THE two rival African Nationalist Parties of Northern Rhodesia have agreed to get together to face the challenge from Sir Roy Welensky, the Federal Premier.
+
+Since 1958, 13 Labour life Peers and Peeresses have been created. Most Labour sentiment would still favour the abolition of the House of Lords, but while it remains Labour has to have an adequate number of members. THE two rival African Nationalist Parties of Northern Rhodesia have agreed to get together to face the challenge from Sir Roy Welensky, the Federal Premier.
+
+Name:

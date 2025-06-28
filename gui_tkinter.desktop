@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Nanonets OCR GUI
+Comment=A GUI for Nanonets OCR batch processing
+Exec=gui_tkinter
+Icon=gui_tkinter
+Terminal=false
+Type=Application
+Categories=Utility;

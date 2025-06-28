@@ -8,6 +8,8 @@ import torch
 from transformers import AutoTokenizer, AutoProcessor, AutoModelForImageTextToText
 import fitz  # PyMuPDF for PDF handling
 from contextlib import contextmanager
+from huggingface_hub import snapshot_download # Import snapshot_download
+import re # Import re for regex checking
 
 class TimingProfiler:
     """Simple timing profiler for real-time step timing"""
@@ -24,8 +26,8 @@ class TimingProfiler:
                 print(f"   ⏱️  {operation_name}: {duration:.2f}s")
 
 class MemoryOptimizedBatchOCRProcessor:
-    def __init__(self, use_cpu=True, batch_size=2, max_pdf_pages_per_chunk=1, max_image_size=(1080, 1080)):
-        self.model_path = "nanonets/Nanonets-OCR-s"
+    def __init__(self, use_cpu=True, batch_size=2, max_pdf_pages_per_chunk=1, max_image_size=(1080, 1080), model_path="nanonets/Nanonets-OCR-s"):
+        self.model_path = model_path
         self.supported_formats = {'.jpg', '.jpeg', '.png', '.tiff', '.tif', '.pdf'}
         self.total_files = 0
         self.processed_files = 0
@@ -68,6 +70,26 @@ class MemoryOptimizedBatchOCRProcessor:
         with self.timing_profiler.time_operation("model_loading"):
             print("🔄 Loading OCR model...")
             
+            # Check if model_path is a local directory
+            if os.path.isdir(self.model_path):
+                print(f"   Using local model from: {self.model_path}")
+                actual_model_path = self.model_path
+            else:
+                # Assume it's a Hugging Face model ID and try to download
+                # A simple regex to check if it looks like a Hugging Face repo ID (e.g., "org/repo")
+                if re.match(r"^[a-zA-Z0-9-]+/[a-zA-Z0-9-.]+$", self.model_path):
+                    print(f"   Downloading model '{self.model_path}' from Hugging Face Hub...")
+                    try:
+                        actual_model_path = snapshot_download(repo_id=self.model_path)
+                        print(f"   Model downloaded to: {actual_model_path}")
+                    except Exception as e:
+                        print(f"❌ Error downloading model: {e}")
+                        print("   Please ensure the model ID is correct and you have network access.")
+                        raise
+                else:
+                    print(f"❌ Invalid model path or Hugging Face ID: {self.model_path}")
+                    raise ValueError("Model path must be a valid local directory or Hugging Face model ID.")
+
             # Set device configuration
             if self.use_cpu:
                 device_config = {"": "cpu"}
@@ -78,9 +100,8 @@ class MemoryOptimizedBatchOCRProcessor:
             
             # Load model with standard attention only
             with self.timing_profiler.time_operation("standard_model_loading"):
-                #snapshot_download(repo_id="nanonets/Nanonets-OCR-s", local_dir="./nanonets-Nanonets-OCR-s", repo_type="model")
                 self.model = AutoModelForImageTextToText.from_pretrained(
-                    self.model_path, 
+                    actual_model_path, # Use the actual_model_path
                     torch_dtype=torch_dtype, 
                     device_map=device_config,
                     trust_remote_code=True
@@ -90,8 +111,8 @@ class MemoryOptimizedBatchOCRProcessor:
             
             with self.timing_profiler.time_operation("tokenizer_processor_loading"):
                 self.model.eval()
-                self.tokenizer = AutoTokenizer.from_pretrained(self.model_path)
-                self.processor = AutoProcessor.from_pretrained(self.model_path, use_fast=True)
+                self.tokenizer = AutoTokenizer.from_pretrained(actual_model_path) # Use the actual_model_path
+                self.processor = AutoProcessor.from_pretrained(actual_model_path, use_fast=True) # Use the actual_model_path
                 self.model_loaded = True
             
             print(f"✅ Model loaded on {'CPU' if self.use_cpu else 'GPU'}")
@@ -699,6 +720,7 @@ def main():
     parser.add_argument('--pdf-chunk-size', type=int, default=1, help='Number of PDF pages to process at once (default: 1)')
     parser.add_argument('--max-image-width', type=int, default=1080, help='Maximum image width in pixels (default: 1080)')
     parser.add_argument('--max-image-height', type=int, default=1080, help='Maximum image height in pixels (default: 1080)')
+    parser.add_argument('--model-path', type=str, default="nanonets/Nanonets-OCR-s", help='Path to the OCR model (default: nanonets/Nanonets-OCR-s)')
     
     args = parser.parse_args()
     
@@ -711,7 +733,8 @@ def main():
         use_cpu=use_cpu,
         batch_size=args.batch_size,
         max_pdf_pages_per_chunk=args.pdf_chunk_size,
-        max_image_size=(args.max_image_width, args.max_image_height)
+        max_image_size=(args.max_image_width, args.max_image_height),
+        model_path=args.model_path
     )
     
     # Process documents
