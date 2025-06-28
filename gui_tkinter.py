@@ -123,8 +123,19 @@ class OCRApp:
 
     def _run_ocr_in_thread(self, input_dir, output_dir, device, batch_size, pdf_chunk_size, max_width, max_height):
         try:
+            # Determine the path to batch_ocr.py within the PyInstaller bundle
+            # In a --onedir bundle, sys.executable points to the main executable,
+            # and batch_ocr.py is placed alongside it by --add-data.
+            if getattr(sys, 'frozen', False): # Check if running in a PyInstaller bundle
+                # If frozen, sys.executable is the path to the bundled executable
+                # and batch_ocr.py is in the same directory.
+                script_path = os.path.join(os.path.dirname(sys.executable), 'batch_ocr.py')
+            else:
+                # Not frozen, running as a regular Python script
+                script_path = "batch_ocr.py" # Assume it's in the current working directory
+
             command = [
-                "python", "batch_ocr.py",
+                sys.executable, script_path, # Use the bundled Python interpreter and the correct script path
                 "--input-dir", input_dir,
                 "--output-dir", output_dir,
                 "--batch-size", str(batch_size),
@@ -139,17 +150,6 @@ class OCRApp:
 
             # Ensure output directory exists
             os.makedirs(output_dir, exist_ok=True)
-
-            # When running as a PyInstaller bundle, batch_ocr.py will be in the same directory as the executable
-            # So, we need to ensure the subprocess command correctly finds it.
-            # If 'python' is used, it will try to find batch_ocr.py in the current working directory.
-            # A better approach for PyInstaller is to directly execute batch_ocr.py if it's bundled.
-            # However, since batch_ocr.py is a separate script, and we are running it via 'python',
-            # we need to ensure 'python' is in PATH and batch_ocr.py is accessible.
-            # For bundled apps, it's often better to import batch_ocr.py as a module if possible,
-            # or ensure the subprocess call is relative to the executable's location.
-            # For now, I'll keep 'python batch_ocr.py' and rely on PyInstaller's internal path handling.
-            # If issues arise, this might need to be revisited.
 
             process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, bufsize=1, universal_newlines=True)
 
