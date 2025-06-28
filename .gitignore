@@ -101,3 +101,4 @@ tmp/
 appimage_build/
 AppDir/
 dist/
+linuxdeploy-x86_64.AppImage

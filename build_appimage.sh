@@ -6,6 +6,7 @@ APP_NAME="gui_tkinter" # Changed to match the main script name
 APP_DIR="${SCRIPT_DIR}/dist/${APP_NAME}"
 LINUXDEPLOY_URL="https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
 LINUXDEPLOY_PATH="${SCRIPT_DIR}/linuxdeploy-x86_64.AppImage"
+APPIMAGE_OUTPUT_DIR="${SCRIPT_DIR}/appimage_build"
 
 # --- Step 0: Pre-requisites (PyInstaller) ---
 echo "--- Checking for PyInstaller ---"
@@ -84,12 +85,16 @@ fi
 
 # --- Step 5: Create AppImage ---
 echo "--- Creating AppImage ---"
-"$LINUXDEPLOY_PATH" \
-    --appdir "$APPDIR_ROOT" \
-    --output appimage \
-    --executable "${APPDIR_BIN}/${APP_NAME}" \
-    --desktop-file "${APPDIR_DESKTOP}/gui_tkinter.desktop" \
-    --icon-file "${APPDIR_ICONS}/gui_tkinter.png"
+mkdir -p "$APPIMAGE_OUTPUT_DIR"
+(
+    cd "$APPIMAGE_OUTPUT_DIR"
+    "$LINUXDEPLOY_PATH" \
+        --appdir "$APPDIR_ROOT" \
+        --output appimage \
+        --executable "${APPDIR_BIN}/${APP_NAME}" \
+        --desktop-file "${SCRIPT_DIR}/gui_tkinter.desktop" \
+        --icon-file "${SCRIPT_DIR}/assets/favicon-32x32.png"
+)
 
 if [ $? -ne 0 ]; then
     echo "Error: linuxdeploy failed. Check the output above for details."
@@ -97,5 +102,5 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "--- AppImage creation complete! ---"
-echo "Your AppImage should be in the current directory."
-echo "You can run it with: ./${APP_NAME}.AppImage"
+echo "Your AppImage should be in: ${APPIMAGE_OUTPUT_DIR}"
+echo "You can run it with: ${APPIMAGE_OUTPUT_DIR}/${APP_NAME}.AppImage"
